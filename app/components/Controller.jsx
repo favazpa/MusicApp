@@ -1,5 +1,5 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import HeadSet from '../assets/svg/HeadSet';
 import Settings from '../assets/svg/Settings';
 import PlayButton from '../assets/svg/PlayButton';
@@ -15,7 +15,7 @@ import TrackPlayer, {
   usePlaybackState,
   useTrackPlayerEvents,
 } from 'react-native-track-player';
-import {playlistData} from '../constants';
+import {playlistData} from '../constants/AppConstants';
 
 const Controller = () => {
   const [track, setTrack] = useState(playlistData[0]);
@@ -26,7 +26,6 @@ const Controller = () => {
       case Event.PlaybackTrackChanged:
         const trackIndex = await TrackPlayer.getCurrentTrack();
         const playingTrack = await TrackPlayer.getTrack(trackIndex);
-        console.log('track', playingTrack, 'trackIndex', trackIndex);
         setTrack(playingTrack);
         break;
     }
@@ -34,7 +33,6 @@ const Controller = () => {
 
   const togglePlayback = async playback => {
     const currentTrack = await TrackPlayer.getCurrentTrack();
-    console.log('currentTask', currentTrack);
     if (currentTrack !== null) {
       if (playback === State.Paused || playback === State.Ready) {
         await TrackPlayer.play();
@@ -43,6 +41,7 @@ const Controller = () => {
       }
     }
   };
+
   return (
     <View style={styles.container}>
       <View style={styles.topContainer}>

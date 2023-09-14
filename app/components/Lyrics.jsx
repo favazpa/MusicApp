@@ -1,67 +1,97 @@
-import React, {useState, useEffect} from 'react';
-import {View, Text, FlatList, Animated} from 'react-native';
-import MaskedView from './MaskedView';
-import MaskedElement from './MaskedElement';
-import {lyricsText} from '../constants';
+import React, {useState, useEffect, useRef} from 'react';
+import {View, Text, FlatList, StyleSheet} from 'react-native';
+import {lyricsText} from '../constants/AppConstants';
+import {useProgress} from 'react-native-track-player';
+import {parseLyric, syncLyric} from '../utils/LyricsUtils';
+
+const ListHeaderComponent = () => {
+  return <View style={styles.emptyHeader} />;
+};
+
+const ListFooterComponent = () => {
+  return <View style={styles.emptyFooter} />;
+};
 
 const LyricsApp = () => {
   const [lyricsData, setLyricsData] = useState([]);
-  const [currentLineIndex, setCurrentLineIndex] = useState(0);
-  const [currentTime, setCurrentTime] = useState(0);
+  const [currentLyrics, setCurrentLyrics] = useState(null);
 
-  const [scrollY] = useState(new Animated.Value(0));
+  const {position} = useProgress();
+  const flatListRef = useRef(null);
 
   useEffect(() => {
-    const lines = lyricsText.split('\n');
-    const lyricsArray = [];
-    for (const line of lines) {
-      const match = line.match(/\[(\d+:\d+\.\d+)\](.+)/);
-      if (match) {
-        const timestamp = match[1];
-        const lyricText = match[2];
-        lyricsArray.push({
-          timestamp,
-          lyricText,
-        });
-      }
-    }
-    console.log(lyricsArray);
-    setLyricsData(lyricsArray);
+    const index = syncLyric(lyricsData, position);
+    setCurrentLyrics(index);
+  }, [position, lyricsData]);
+
+  useEffect(() => {
+    const lyrics = parseLyric(lyricsText);
+    setLyricsData(lyrics);
   }, []);
 
+  const itemHeight = 50;
+
+  const getItemLayout = (data, index) => ({
+    length: itemHeight,
+    offset: itemHeight * index,
+    index,
+  });
+
+  useEffect(() => {
+    if (flatListRef.current !== null && currentLyrics !== null) {
+      flatListRef.current.scrollToIndex({
+        animated: true,
+        index: currentLyrics,
+      });
+    }
+  }, [currentLyrics]);
+
+  const renderItem = ({item, index}) => (
+    <View style={styles.itemContainer}>
+      <Text
+        style={[styles.lyrics, index === currentLyrics && styles.activeLyric]}>
+        {item?.text}
+      </Text>
+    </View>
+  );
+
   return (
-    <View style={{width: '100%'}}>
+    <View style={styles.container}>
       <FlatList
-        ListHeaderComponent={() => <View style={{height: 50}} />}
+        ref={flatListRef}
+        ListHeaderComponent={ListHeaderComponent}
+        ListFooterComponent={ListFooterComponent}
         data={lyricsData}
-        style={{width: '100%', height: '100%'}}
+        style={styles.flatlist}
         keyExtractor={(item, index) => index.toString()}
-        onScroll={Animated.event(
-          [{nativeEvent: {contentOffset: {y: scrollY}}}],
-          {useNativeDriver: false},
-        )}
-        ListFooterComponent={() => <View style={{height: 100}} />}
-        renderItem={({item}) => (
-          <View
-            style={{
-              padding: 10,
-              justifyContent: 'center',
-              alignItems: 'center',
-            }}>
-            <Text
-              style={{
-                color: 'black',
-                fontWeight: '500',
-                fontSize: 16,
-                lineHeight: 30,
-              }}>
-              {item.lyricText}
-            </Text>
-          </View>
-        )}
+        getItemLayout={getItemLayout}
+        renderItem={renderItem}
       />
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {width: '100%'},
+  emptyHeader: {height: 120},
+  flatlist: {width: '100%', height: '100%'},
+  emptyFooter: {height: 100},
+  itemContainer: {
+    padding: 10,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  lyrics: {
+    textAlign: 'center',
+    fontWeight: '500',
+    lineHeight: 30,
+    color: 'black',
+    fontSize: 16,
+  },
+  activeLyric: {
+    color: '#FF6F7E',
+    fontSize: 25,
+  },
+});
 
 export default LyricsApp;

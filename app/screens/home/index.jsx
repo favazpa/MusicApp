@@ -1,10 +1,4 @@
-import {
-  ActivityIndicator,
-  SafeAreaView,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import {ActivityIndicator, SafeAreaView, StyleSheet, View} from 'react-native';
 import React, {useEffect, useState} from 'react';
 import Header from '../../components/Header';
 import ProgressBar from '../../components/ProgressBar';
@@ -14,18 +8,17 @@ import {setupPlayer, addTrack} from '../../../musicPlayerServices';
 import MaskedView from '../../components/MaskedView';
 import MaskedElement from '../../components/MaskedElement';
 
-const Main = () => {
+const Home = () => {
   const [isPLayerReady, setIsPlayerReady] = useState(false);
 
   async function setup() {
     let isSetup = await setupPlayer();
-
     if (isSetup) {
       await addTrack();
     }
-
     setIsPlayerReady(isSetup);
   }
+
   useEffect(() => {
     setup();
   }, []);
@@ -37,25 +30,26 @@ const Main = () => {
       </SafeAreaView>
     );
   }
+
   return (
     <SafeAreaView style={styles.container}>
       <Header />
       <ProgressBar />
-      <View style={{height: '50%'}}>
+      <View style={styles.maskedContainer}>
         <MaskedView element={<MaskedElement />}>
           <Lyrics />
         </MaskedView>
       </View>
-
       <Controller />
     </SafeAreaView>
   );
 };
 
-export default Main;
+export default Home;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
   },
+  maskedContainer: {height: '50%'},
 });

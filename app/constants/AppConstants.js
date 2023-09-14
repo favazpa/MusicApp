@@ -1,11 +1,9 @@
-import {Track} from 'react-native-track-player';
-
 export const playlistData = [
   {
     id: 1,
     title: 'Maan Meri jaan',
     artist: 'King',
-    url: require('../app/assets/songs/MaanMeriJaan.mp3'),
+    url: require('../assets/songs/MaanMeriJaan.mp3'),
   },
 ];
 

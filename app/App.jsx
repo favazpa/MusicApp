@@ -1,9 +1,9 @@
 import 'react-native-gesture-handler';
 import React from 'react';
-import Main from './screens/main/Index';
+import Home from './screens/home';
 
 const App = () => {
-  return <Main />;
+  return <Home />;
 };
 
 export default App;

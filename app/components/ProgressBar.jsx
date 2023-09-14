@@ -1,14 +1,19 @@
 import {Image, StyleSheet, Text, View} from 'react-native';
-import React, {useEffect, useState} from 'react';
+import React from 'react';
 import TrackPlayer, {useProgress} from 'react-native-track-player';
 import {Slider} from '@miblanchard/react-native-slider';
 
 const ProgressBar = () => {
   const {position, duration} = useProgress();
 
-  useEffect(() => {
-    console.log('position', position);
-  }, [position]);
+  const formatTime = seconds => {
+    const date = new Date(seconds * 1000);
+    return date.toISOString().substring(15, 19);
+  };
+
+  const seekToPosition = async change => {
+    await TrackPlayer.seekTo(change[0]);
+  };
 
   return (
     <View style={styles.container}>
@@ -19,15 +24,7 @@ const ProgressBar = () => {
       <View style={styles.progressSlideContainer}>
         <Slider
           step={0}
-          onSlidingComplete={async change => {
-            await TrackPlayer.seekTo(change[0]);
-          }}
-          //   onValueChange={async change => {
-          //     console.log('change', change);
-          //     TrackPlayer.pause();
-          //     await TrackPlayer.seekTo(change[0]);
-          //     TrackPlayer.play();
-          //   }}
+          onSlidingComplete={seekToPosition}
           value={position}
           minimumValue={0}
           maximumValue={duration}
@@ -39,15 +36,8 @@ const ProgressBar = () => {
         />
       </View>
       <View style={styles.timeContainer}>
-        <Text style={styles.time}>
-          {new Date(position * 1000).toISOString().substring(15, 19)}
-        </Text>
-        <Text style={styles.time}>
-          -
-          {new Date((duration - position) * 1000)
-            .toISOString()
-            .substring(15, 19)}
-        </Text>
+        <Text style={styles.time}>{formatTime(position)}</Text>
+        <Text style={styles.time}>-{formatTime(duration - position)}</Text>
       </View>
     </View>
   );
